@@ -26,7 +26,7 @@ export type Group = {
 	repositoryUrl: string | undefined;
 };
 
-export type VersionedRelease = Release & { version: string };
+type VersionedRelease = Release & { version: string };
 
 export type Notes =
 	| { kind: "releases"; releases: VersionedRelease[]; truncated: boolean }

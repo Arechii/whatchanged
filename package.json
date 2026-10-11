@@ -35,7 +35,8 @@
 		"prepack": "pnpm build",
 		"changeset": "changeset",
 		"version-packages": "changeset version && oxfmt --write CHANGELOG.md package.json",
-		"release": "pnpm build && changeset publish"
+		"release": "pnpm build && changeset publish",
+		"knip": "knip"
 	},
 	"devDependencies": {
 		"@changesets/cli": "^3.0.3",
@@ -44,6 +45,7 @@
 		"@types/semver": "^7.8.0",
 		"ink": "^8.0.0",
 		"ink-testing-library": "^4.0.0",
+		"knip": "^6.41.0",
 		"oxfmt": "^0.72.0",
 		"oxlint": "^1.87.0",
 		"oxlint-tsgolint": "~7.0.2004",
