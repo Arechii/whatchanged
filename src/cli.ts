@@ -112,6 +112,12 @@ async function main(): Promise<void> {
 	process.stdout.write(renderPlain(groups, notes));
 }
 
+// `whatchanged | head` closes the pipe before the notes end, which is fine.
+process.stdout.on("error", (error: NodeJS.ErrnoException) => {
+	if (error.code !== "EPIPE") throw error;
+	process.exit(0);
+});
+
 main().catch((error: unknown) => {
 	clearProgress();
 	process.stderr.write(
