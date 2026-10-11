@@ -18,6 +18,8 @@ const BUMPS: Record<Bump, { label: string; color: string }> = {
 };
 
 const STATUS_WIDTH = 13;
+// Below this the status column would push rows past the terminal's edge.
+const MIN_STATUS_COLUMNS = 60;
 const LIST_KEYS = "↑↓ move   ⏎ read   o open in browser   q quit";
 const DETAIL_KEYS =
 	"↑↓ scroll   space page   n/p next/prev   o browser   esc back";
@@ -69,12 +71,14 @@ function Row({
 	selected,
 	spinner,
 	versionWidth,
+	showStatus,
 }: {
 	group: Group;
 	notes: Notes | undefined;
 	selected: boolean;
 	spinner: string;
 	versionWidth: number;
+	showStatus: boolean;
 }) {
 	const bump = BUMPS[group.bump];
 	return (
@@ -85,7 +89,7 @@ function Row({
 			<Box width={6} flexShrink={0}>
 				<Text color={bump.color}>{bump.label}</Text>
 			</Box>
-			<Box flexGrow={1} flexShrink={1} minWidth={8}>
+			<Box flexGrow={1} flexShrink={1}>
 				<Text bold={selected} wrap="truncate-end">
 					{group.names.join(", ")}
 				</Text>
@@ -93,14 +97,16 @@ function Row({
 			<Box width={versionWidth} marginLeft={2} flexShrink={0}>
 				<Text>{`${group.current} → ${group.latest}`}</Text>
 			</Box>
-			<Box
-				width={STATUS_WIDTH}
-				marginLeft={2}
-				flexShrink={0}
-				justifyContent="flex-end"
-			>
-				<Text dimColor>{notes ? statusOf(notes) : spinner}</Text>
-			</Box>
+			{showStatus ? (
+				<Box
+					width={STATUS_WIDTH}
+					marginLeft={2}
+					flexShrink={0}
+					justifyContent="flex-end"
+				>
+					<Text dimColor>{notes ? statusOf(notes) : spinner}</Text>
+				</Box>
+			) : null}
 		</Box>
 	);
 }
@@ -257,17 +263,21 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 
 	return (
 		<Box flexDirection="column">
-			<Box>
+			<Text wrap="truncate-end">
 				<Text bold>whatchanged</Text>
-				<Text>{`  ${groups.length} outdated`}</Text>
+				{`  ${groups.length} outdated`}
 				{majors > 0 ? <Text color="red">{`, ${majors} major`}</Text> : null}
 				{loading ? (
 					<Text
 						dimColor
 					>{`  ${spinner} reading notes ${notes.size}/${groups.length}`}</Text>
 				) : null}
-			</Box>
-			{warning ? <Text color="yellow">{warning}</Text> : null}
+			</Text>
+			{warning ? (
+				<Text color="yellow" wrap="truncate-end">
+					{warning}
+				</Text>
+			) : null}
 			{groups.slice(start, start + height).map((group, i) => (
 				<Row
 					key={group.key}
@@ -276,6 +286,7 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 					selected={start + i === cursor}
 					spinner={spinner}
 					versionWidth={versionWidth}
+					showStatus={columns >= MIN_STATUS_COLUMNS}
 				/>
 			))}
 			<Text dimColor wrap="truncate-end">
