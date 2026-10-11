@@ -18,12 +18,14 @@ const BUMPS: Record<Bump, { label: string; color: string }> = {
 };
 
 const STATUS_WIDTH = 13;
-const LIST_KEYS = "↑↓ move   ⏎ read   q quit";
-const DETAIL_KEYS = "↑↓ scroll   space page   n/p next/prev   esc back";
+const LIST_KEYS = "↑↓ move   ⏎ read   o open in browser   q quit";
+const DETAIL_KEYS =
+	"↑↓ scroll   space page   n/p next/prev   o browser   esc back";
 
 export type AppProps = {
 	groups: readonly Group[];
 	notesFor: (group: Group) => Promise<Notes>;
+	openUrl: (url: string) => void;
 	warning?: string | undefined;
 };
 
@@ -118,6 +120,7 @@ function Detail({
 	offset,
 	height,
 	spinner,
+	flash,
 }: {
 	group: Group;
 	notes: Notes | undefined;
@@ -125,6 +128,7 @@ function Detail({
 	offset: number;
 	height: number;
 	spinner: string;
+	flash: string | undefined;
 }) {
 	const bump = BUMPS[group.bump];
 	const end = Math.min(lines.length, offset + height);
@@ -154,13 +158,15 @@ function Detail({
 			) : (
 				<Text dimColor>{`${spinner} reading notes`}</Text>
 			)}
-			<Text dimColor>{DETAIL_KEYS + position}</Text>
+			<Text dimColor wrap="truncate-end">
+				{flash ?? DETAIL_KEYS + position}
+			</Text>
 		</Box>
 	);
 }
 
 /** The interactive view: every outdated group, its notes loading in place. */
-export function App({ groups, notesFor, warning }: AppProps) {
+export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 	const { exit } = useApp();
 	const { columns, rows } = useWindowSize();
 	const notes = useNotes(groups, notesFor);
@@ -169,6 +175,7 @@ export function App({ groups, notesFor, warning }: AppProps) {
 	const [cursor, setCursor] = useState(0);
 	const [reading, setReading] = useState(false);
 	const [offset, setOffset] = useState(0);
+	const [flash, setFlash] = useState<string>();
 
 	const selected = groups[cursor];
 	const selectedNotes = selected ? notes.get(selected.key) : undefined;
@@ -196,6 +203,13 @@ export function App({ groups, notesFor, warning }: AppProps) {
 	};
 
 	useInput((input, key) => {
+		setFlash(undefined);
+		if (input === "o" && selected) {
+			const url = linkFor(selected, selectedNotes ?? { kind: "missing" });
+			openUrl(url);
+			setFlash(`Opened ${url}`);
+			return;
+		}
 		if (reading) {
 			if (input === "q" || key.escape || key.leftArrow || input === "h") {
 				setReading(false);
@@ -230,6 +244,7 @@ export function App({ groups, notesFor, warning }: AppProps) {
 				offset={offset}
 				height={pageHeight}
 				spinner={spinner}
+				flash={flash}
 			/>
 		);
 	}
@@ -263,7 +278,9 @@ export function App({ groups, notesFor, warning }: AppProps) {
 					versionWidth={versionWidth}
 				/>
 			))}
-			<Text dimColor>{LIST_KEYS}</Text>
+			<Text dimColor wrap="truncate-end">
+				{flash ?? LIST_KEYS}
+			</Text>
 		</Box>
 	);
 }

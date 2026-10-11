@@ -41,12 +41,15 @@ const notesFor = async (found: Group): Promise<Notes> =>
 			}
 		: { kind: "missing" };
 
+const noop = () => undefined;
 const ENTER = "\r";
 const ESCAPE = "\u001B";
 
 describe("App", () => {
 	it("lists the groups and fills in their notes as they arrive", async () => {
-		const { lastFrame } = render(<App groups={groups} notesFor={notesFor} />);
+		const { lastFrame } = render(
+			<App groups={groups} notesFor={notesFor} openUrl={noop} />,
+		);
 		expect(lastFrame()).toContain("2 outdated, 1 major");
 		expect(lastFrame()).toContain("1.0.0 → 2.0.0");
 		await vi.waitFor(() => {
@@ -58,7 +61,7 @@ describe("App", () => {
 
 	it("moves the cursor with j and k", async () => {
 		const { lastFrame, stdin } = render(
-			<App groups={groups} notesFor={notesFor} />,
+			<App groups={groups} notesFor={notesFor} openUrl={noop} />,
 		);
 		expect(lastFrame()).toMatch(/› major\s+alpha/);
 		stdin.write("j");
@@ -76,6 +79,7 @@ describe("App", () => {
 			<App
 				groups={[group("alpha", "major")]}
 				notesFor={() => Promise.reject(new Error("offline"))}
+				openUrl={noop}
 			/>,
 		);
 		await vi.waitFor(() => {
@@ -85,7 +89,7 @@ describe("App", () => {
 
 	it("reads a group's notes and moves between groups", async () => {
 		const { lastFrame, stdin } = render(
-			<App groups={groups} notesFor={notesFor} />,
+			<App groups={groups} notesFor={notesFor} openUrl={noop} />,
 		);
 		await vi.waitFor(() => {
 			expect(lastFrame()).toContain("1 release");
@@ -109,9 +113,30 @@ describe("App", () => {
 		});
 	});
 
+	it("opens the group's page in the browser with o", async () => {
+		const openUrl = vi.fn<(url: string) => void>();
+		const { lastFrame, stdin } = render(
+			<App groups={groups} notesFor={notesFor} openUrl={openUrl} />,
+		);
+		await vi.waitFor(() => {
+			expect(lastFrame()).toContain("1 release");
+		});
+		stdin.write("o");
+		const url = "https://github.com/o/alpha/compare/v1.0.0...v2.0.0";
+		await vi.waitFor(() => {
+			expect(lastFrame()).toContain(`Opened ${url}`);
+		});
+		expect(openUrl).toHaveBeenCalledWith(url);
+	});
+
 	it("shows the warning it is given", () => {
 		const { lastFrame } = render(
-			<App groups={groups} notesFor={notesFor} warning="No GitHub token" />,
+			<App
+				groups={groups}
+				notesFor={notesFor}
+				openUrl={noop}
+				warning="No GitHub token"
+			/>,
 		);
 		expect(lastFrame()).toContain("No GitHub token");
 	});

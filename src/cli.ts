@@ -7,6 +7,7 @@ import { createElement } from "react";
 
 import manifest from "../package.json" with { type: "json" };
 import { App } from "./app";
+import { openUrl } from "./browser";
 import { createGitHub, findToken } from "./github";
 import { findGroups, findNotes } from "./notes";
 import { readOutdated } from "./outdated";
@@ -95,6 +96,7 @@ async function main(): Promise<void> {
 			createElement(App, {
 				groups,
 				notesFor: (group) => findNotes(group, github),
+				openUrl,
 				warning,
 			}),
 			{ alternateScreen: true },
