@@ -186,7 +186,8 @@ function fakeGitHub(
 		asked,
 		releases: async (_repo, isDone) => ({
 			releases,
-			truncated: !isDone(releases),
+			// An empty list is the last page; otherwise paging ran out before isDone.
+			truncated: releases.length > 0 && !isDone(releases),
 		}),
 		file: async (_repo, path) => {
 			asked.push(path);
@@ -299,6 +300,15 @@ describe("findNotes", () => {
 	it("is missing when neither source has the range", async () => {
 		expect(await findNotes(group(), fakeGitHub([]))).toEqual({
 			kind: "missing",
+			truncated: false,
+		});
+	});
+
+	it("says when paging stopped before the range and nothing else turned up", async () => {
+		const github = fakeGitHub([release("other@9.0.0"), release("other@8.0.0")]);
+		expect(await findNotes(group(), github)).toEqual({
+			kind: "missing",
+			truncated: true,
 		});
 	});
 

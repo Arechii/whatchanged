@@ -55,14 +55,15 @@ describe("renderPlain", () => {
 
 	it("prints changelog sections and the other outcomes", () => {
 		const output = renderPlain(
-			[group(), group(), group({ repo: null }), group()],
+			[group(), group(), group(), group({ repo: null }), group()],
 			[
 				{
 					kind: "changelog",
 					path: "CHANGELOG.md",
 					markdown: "## 1.15.5\n- fix",
 				},
-				{ kind: "missing" },
+				{ kind: "missing", truncated: false },
+				{ kind: "missing", truncated: true },
 				{ kind: "elsewhere" },
 				{
 					kind: "failed",
@@ -73,6 +74,7 @@ describe("renderPlain", () => {
 		);
 		expect(output).toContain("_From CHANGELOG.md_\n\n### 1.15.5\n- fix");
 		expect(output).toContain("_No release notes found._");
+		expect(output).toContain("older ones were not read");
 		expect(output).toContain("_Not on GitHub._");
 		expect(output).toContain("Set GITHUB_TOKEN");
 	});

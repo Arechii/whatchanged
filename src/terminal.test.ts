@@ -71,7 +71,7 @@ describe("statusOf", () => {
 		expect(statusOf({ kind: "changelog", path: "", markdown: "" })).toBe(
 			"changelog",
 		);
-		expect(statusOf({ kind: "missing" })).toBe("no notes");
+		expect(statusOf({ kind: "missing", truncated: false })).toBe("no notes");
 		expect(statusOf({ kind: "typings" })).toBe("type defs");
 		expect(statusOf({ kind: "failed", message: "", rateLimited: true })).toBe(
 			"rate limited",
