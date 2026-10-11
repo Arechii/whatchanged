@@ -58,11 +58,12 @@ jobs:
       - name: Install the packed tarball
         shell: bash
         run: |
-          npm pack --pack-destination "$RUNNER_TEMP"
+          # RUNNER_TEMP is a backslashed path on Windows, so no glob on it.
+          tarball=$(npm pack --pack-destination "$RUNNER_TEMP" | tail -1)
           mkdir "$RUNNER_TEMP/smoke"
           cd "$RUNNER_TEMP/smoke"
           npm init -y > /dev/null
-          npm install "$RUNNER_TEMP"/whatchanged-*.tgz
+          npm install "$RUNNER_TEMP/$tarball"
           npx whatchanged --version
           npx whatchanged --help
 
