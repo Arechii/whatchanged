@@ -124,7 +124,7 @@ describe("App", () => {
 		stdin.write("o");
 		const url = "https://github.com/o/alpha/compare/v1.0.0...v2.0.0";
 		await vi.waitFor(() => {
-			expect(lastFrame()).toContain(`Opened ${url}`);
+			expect(lastFrame()).toContain(`Opening ${url}`);
 		});
 		expect(openUrl).toHaveBeenCalledWith(url);
 	});

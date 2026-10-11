@@ -215,7 +215,7 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 		if (input === "o" && selected) {
 			const url = linkFor(selected, selectedNotes ?? { kind: "missing" });
 			openUrl(url);
-			setFlash(`Opened ${url}`);
+			setFlash(`Opening ${url}`);
 			return;
 		}
 		if (reading) {
