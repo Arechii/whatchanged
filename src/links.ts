@@ -19,8 +19,11 @@ export function browsableUrl(url: string | undefined): string | undefined {
 		.replace(/^ssh:\/\/git@/, "https://")
 		.replace(/^git@([^:]+):/, "https://$1/")
 		.replace(/\.git$/, "");
-	return https.startsWith("https://") || https.startsWith("http://")
-		? https
+	if (!URL.canParse(https)) return undefined;
+	// Parsing percent-encodes the control characters a package could plant.
+	const parsed = new URL(https);
+	return parsed.protocol === "https:" || parsed.protocol === "http:"
+		? parsed.href
 		: undefined;
 }
 

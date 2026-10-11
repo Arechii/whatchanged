@@ -83,6 +83,10 @@ describe("browsableUrl", () => {
 		["git+ssh://git@gitlab.com/o/r.git", "https://gitlab.com/o/r"],
 		["bitbucket:o/r", "https://bitbucket.org/o/r"],
 		["https://example.com/repo", "https://example.com/repo"],
+		[
+			"https://gitlab.com/o/g\u001B]52;c;aGVsbG8=\u0007/x",
+			"https://gitlab.com/o/g%1B]52;c;aGVsbG8=%07/x",
+		],
 	])("reads %s", (url, expected) => {
 		expect(browsableUrl(url)).toBe(expected);
 	});
