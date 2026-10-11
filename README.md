@@ -4,8 +4,11 @@ Read the release notes for every outdated dependency, from the version you
 have to the latest one.
 
 ```bash
-npx whatchanged
+npx @arechi/whatchanged
 ```
+
+Installed globally (`npm i -g @arechi/whatchanged`), the command is
+`whatchanged`.
 
 Run it in a pnpm workspace. It reads `pnpm -r outdated`, finds each
 package's GitHub repo, and collects the notes for every version the upgrade
@@ -27,9 +30,9 @@ Piped, or with `--plain`, it prints Markdown instead, ready to paste into a
 pull request:
 
 ```bash
-npx whatchanged --plain > notes.md
-npx whatchanged react vite     # only these packages
-npx whatchanged --cwd ../app   # another workspace
+npx @arechi/whatchanged --plain > notes.md
+npx @arechi/whatchanged react vite     # only these packages
+npx @arechi/whatchanged --cwd ../app   # another workspace
 ```
 
 ## Where the notes come from
