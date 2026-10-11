@@ -1,0 +1,266 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+
+	// Setting `plugins` replaces the default set, so everything wanted has to
+	// be listed. react-perf stays out: it objects to every inline prop.
+	"plugins": [
+		"typescript",
+		"unicorn",
+		"oxc",
+		"react",
+		"import",
+		"promise",
+		"vitest",
+	],
+
+	// Only correctness is on by default, and only at warn. The rest of the
+	// categories are opted into rule by rule below.
+	"categories": {
+		"correctness": "error",
+		"suspicious": "error",
+		"perf": "error",
+	},
+
+	"options": {
+		// Runs the tsgolint backend.
+		"typeAware": true,
+		// A suppression that stopped being needed becomes a warning, and CI
+		// denies warnings.
+		"reportUnusedDisableDirectives": "warn",
+	},
+
+	"rules": {
+		// --- off ---------------------------------------------------------
+		// The automatic JSX runtime makes the import unnecessary.
+		"react/react-in-jsx-scope": "off",
+		// Paging through GitHub releases is sequential by nature.
+		"no-await-in-loop": "off",
+		// Objects to every helper closure that reads its enclosing scope.
+		"unicorn/consistent-function-scoping": "off",
+		// TypeScript's own exhaustiveness checking already proves these.
+		"typescript/consistent-return": "off",
+		// Objects to `rows.map((r) => ({ ...r, extra }))`.
+		"oxc/no-map-spread": "off",
+		// Almost every hit is `arr[i] as T` forced by noUncheckedIndexedAccess.
+		// non-nullable-type-assertion-style covers the subset worth changing.
+		"typescript/no-unsafe-type-assertion": "off",
+		// Fires on any function whose first parameter is named `error`, which
+		// here is a predicate or a listener rather than a node-style callback.
+		"promise/no-promise-in-callback": "off",
+		// Purely stylistic.
+		"no-underscore-dangle": "off",
+		"import/no-unassigned-import": "off",
+		"import/no-named-as-default": "off",
+		"import/no-named-as-default-member": "off",
+
+		// --- retuned defaults --------------------------------------------
+		// The middle of a chain still has to pass its value on; a terminal
+		// callback is a side effect with no caller to return one to.
+		"promise/always-return": ["error", { "ignoreLastCallback": true }],
+		// vitest takes the assertion message as a second argument to
+		// `expect`, which the rule's default of one argument rejects.
+		"vitest/valid-expect": ["error", { "maxArgs": 2 }],
+
+		// --- React -------------------------------------------------------
+		"react/rules-of-hooks": "error",
+		"react/exhaustive-deps": "error",
+		"react/self-closing-comp": "error",
+		"react/jsx-boolean-value": ["error", "never"],
+		"react/jsx-curly-brace-presence": [
+			"error",
+			{ "children": "never", "props": "never" },
+		],
+		"react/jsx-fragments": ["error", "syntax"],
+		"react/jsx-no-useless-fragment": "error",
+		"react/display-name": "error",
+		"react/hook-use-state": "error",
+
+		// --- style -------------------------------------------------------
+		"no-param-reassign": "error",
+		"default-param-last": "error",
+		"one-var": ["error", "never"],
+		"unicorn/prefer-number-properties": "error",
+		"unicorn/prefer-node-protocol": "error",
+		"typescript/no-inferrable-types": "error",
+		"no-else-return": "error",
+		"no-var": "error",
+		"prefer-const": "error",
+		"typescript/consistent-indexed-object-style": "error",
+		"typescript/no-empty-object-type": "error",
+		"typescript/no-namespace": "error",
+		"typescript/prefer-function-type": "error",
+		"typescript/unified-signatures": "error",
+		// A property signature is checked against its argument types the
+		// same way in and out; a method signature is not.
+		"typescript/method-signature-style": ["error", "property"],
+		"typescript/array-type": ["error", { "default": "array" }],
+
+		// --- correctness and safety outside the enabled categories -------
+		"array-callback-return": "error",
+		"default-case-last": "error",
+		"no-case-declarations": "error",
+		"no-constructor-return": "error",
+		"no-fallthrough": "error",
+		"no-inner-declarations": "error",
+		"no-label-var": "error",
+		"no-labels": "error",
+		"no-lone-blocks": "error",
+		"no-proto": "error",
+		"no-prototype-builtins": "error",
+		"no-redeclare": "error",
+		"no-regex-spaces": "error",
+		"no-script-url": "error",
+		"no-self-compare": "error",
+		"no-sequences": "error",
+		"no-template-curly-in-string": "error",
+		"prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
+		"prefer-exponentiation-operator": "error",
+		"prefer-numeric-literals": "error",
+		"prefer-regex-literals": "error",
+		"prefer-rest-params": "error",
+		"prefer-template": "error",
+		"radix": "error",
+		"guard-for-in": "error",
+		"no-multi-assign": "error",
+		"no-new-func": "error",
+		"no-new-wrappers": "error",
+		"no-promise-executor-return": "error",
+		"no-return-assign": "error",
+		"no-throw-literal": "error",
+		"no-unreachable-loop": "error",
+		"no-useless-assignment": "error",
+
+		"typescript/adjacent-overload-signatures": "error",
+		"typescript/ban-ts-comment": "error",
+		"typescript/ban-types": "error",
+		"typescript/dot-notation": "error",
+		"typescript/no-empty-interface": "error",
+		"typescript/no-invalid-void-type": "error",
+		"typescript/prefer-string-starts-ends-with": "error",
+
+		"unicorn/no-instanceof-array": "error",
+		"unicorn/no-static-only-class": "error",
+		"unicorn/no-unnecessary-array-flat-depth": "error",
+		"unicorn/prefer-date-now": "error",
+		"unicorn/prefer-includes": "error",
+		"unicorn/prefer-math-min-max": "error",
+		"unicorn/error-message": "error",
+		"unicorn/no-abusive-eslint-disable": "error",
+		"unicorn/no-immediate-mutation": "error",
+		"unicorn/no-useless-promise-resolve-reject": "error",
+		"unicorn/throw-new-error": "error",
+		"oxc/branches-sharing-code": "error",
+
+		"promise/no-return-in-finally": "error",
+		"promise/no-return-wrap": "error",
+
+		// --- tests ---------------------------------------------------------
+		"vitest/consistent-test-it": "error",
+		"vitest/no-alias-methods": "error",
+		"vitest/no-duplicate-hooks": "error",
+		"vitest/no-identical-title": "error",
+		"vitest/no-test-prefixes": "error",
+		"vitest/no-test-return-statement": "error",
+		"vitest/prefer-equality-matcher": "error",
+		"vitest/prefer-hooks-on-top": "error",
+		"vitest/prefer-importing-vitest-globals": "error",
+		"vitest/prefer-spy-on": "error",
+		"vitest/prefer-to-contain": "error",
+		"vitest/prefer-to-have-length": "error",
+
+		// --- type safety --------------------------------------------------
+		"typescript/no-explicit-any": "error",
+		"typescript/no-non-null-assertion": "error",
+		"typescript/consistent-type-imports": "error",
+		"typescript/consistent-type-exports": "error",
+		"typescript/no-import-type-side-effects": "error",
+		// `x == null` is the one comparison that has to stay loose: it is the
+		// only way to catch null and undefined in a single test.
+		"eqeqeq": ["error", "always", { "null": "ignore" }],
+		"typescript/no-unsafe-function-type": "error",
+		"typescript/no-non-null-asserted-nullish-coalescing": "error",
+		"typescript/consistent-type-assertions": [
+			"error",
+			{
+				"assertionStyle": "as",
+				"objectLiteralTypeAssertions": "allow-as-parameter",
+			},
+		],
+		"import/no-cycle": "error",
+		"import/no-duplicates": "error",
+		"import/export": "error",
+		"import/named": "error",
+		"import/no-mutable-exports": "error",
+
+		// --- type-aware ----------------------------------------------------
+		// The type-aware correctness rules come on with the category; these
+		// are the pedantic, suspicious and nursery ones worth their noise.
+		"typescript/no-unnecessary-condition": "error",
+		"typescript/prefer-optional-chain": "error",
+		// Only where `||` and `??` are actually equivalent: a falsy primitive
+		// fallback is a different question from a nullish one.
+		"typescript/prefer-nullish-coalescing": [
+			"error",
+			{
+				"ignorePrimitives": {
+					"bigint": true,
+					"boolean": true,
+					"number": true,
+					"string": true,
+				},
+			},
+		],
+		"typescript/no-misused-promises": "error",
+		"typescript/require-await": "error",
+		"typescript/return-await": "error",
+		"typescript/no-deprecated": "error",
+		// A switch over something other than a union has no exhaustive set
+		// to check against, so only a default clause can close it.
+		"typescript/switch-exhaustiveness-check": [
+			"error",
+			{ "requireDefaultForNonUnion": true },
+		],
+		"typescript/restrict-plus-operands": "error",
+		"typescript/related-getter-setter-pairs": "error",
+		"typescript/prefer-promise-reject-errors": "error",
+		"typescript/prefer-readonly": "error",
+		"typescript/strict-void-return": "error",
+		"typescript/no-unsafe-argument": "error",
+		"typescript/no-unsafe-assignment": "error",
+		"typescript/no-unsafe-call": "error",
+		"typescript/no-unsafe-member-access": "error",
+		"typescript/no-unsafe-return": "error",
+		"typescript/use-unknown-in-catch-callback-variable": "error",
+		"typescript/only-throw-error": "error",
+		"typescript/no-confusing-void-expression": [
+			"error",
+			{
+				"ignoreArrowShorthand": true,
+				"ignoreVoidOperator": true,
+				"ignoreVoidReturningFunctions": true,
+			},
+		],
+		// The nullable forms are what noUncheckedIndexedAccess produces and
+		// what the code deliberately tests; the rest are worth reading.
+		"typescript/strict-boolean-expressions": [
+			"error",
+			{
+				"allowNullableBoolean": true,
+				"allowNullableNumber": true,
+				"allowNullableObject": true,
+				"allowNullableString": true,
+			},
+		],
+	},
+
+	"overrides": [
+		{
+			// A mock standing in for an async signature is async without
+			// awaiting.
+			"files": ["**/*.test.ts", "**/*.test.tsx", "test/**"],
+			"rules": {
+				"typescript/require-await": "off",
+			},
+		},
+	],
+}

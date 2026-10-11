@@ -1,0 +1,9 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+
+	// oxfmt's own defaults are spaces at width 100.
+	"useTabs": true,
+	"printWidth": 80,
+
+	"sortImports": {},
+}
