@@ -38,6 +38,12 @@ let progressShown = false;
 function clearProgress(): void {
 	if (progressShown) process.stderr.write("\r\u001B[2K");
 	progressShown = false;
+	process.off("SIGINT", interrupted);
+}
+
+function interrupted(): void {
+	clearProgress();
+	process.exit(130);
 }
 
 async function main(): Promise<void> {
@@ -65,6 +71,7 @@ async function main(): Promise<void> {
 	if (interactive) {
 		process.stderr.write(PROGRESS);
 		progressShown = true;
+		process.once("SIGINT", interrupted);
 	}
 	const outdated = (await readOutdated(cwd)).filter(
 		(dependency) =>
@@ -102,7 +109,8 @@ async function main(): Promise<void> {
 			{ alternateScreen: true },
 		);
 		await view.waitUntilExit();
-		return;
+		// Notes still loading would hold the process open on a closed view.
+		process.exit(0);
 	}
 
 	if (warning !== undefined) process.stderr.write(`${warning}\n`);
