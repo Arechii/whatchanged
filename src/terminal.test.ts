@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { statusOf, toLines, windowStart } from "./terminal";
+import { clampOffset, statusOf, toLines, windowStart } from "./terminal";
 
 describe("toLines", () => {
 	it("styles headings and drops their hashes", () => {
@@ -85,5 +85,14 @@ describe("windowStart", () => {
 		expect(windowStart(50, 100, 10)).toBe(45);
 		expect(windowStart(99, 100, 10)).toBe(90);
 		expect(windowStart(3, 5, 10)).toBe(0);
+	});
+});
+
+describe("clampOffset", () => {
+	it("keeps the last page full and never goes below the top", () => {
+		expect(clampOffset(222, 62, 20)).toBe(42);
+		expect(clampOffset(-3, 62, 20)).toBe(0);
+		expect(clampOffset(5, 10, 20)).toBe(0);
+		expect(clampOffset(7, 62, 20)).toBe(7);
 	});
 });

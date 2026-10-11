@@ -101,3 +101,12 @@ export function windowStart(
 	const centered = cursor - Math.floor(height / 2);
 	return Math.max(0, Math.min(centered, count - height));
 }
+
+/** A scroll offset kept inside content of `total` rows shown `height` at a time. */
+export function clampOffset(
+	offset: number,
+	total: number,
+	height: number,
+): number {
+	return Math.max(0, Math.min(offset, total - height));
+}

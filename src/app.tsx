@@ -6,7 +6,7 @@ import { linkFor } from "./links";
 import type { Bump, Group, Notes } from "./notes";
 import { groupTitle, notesMarkdown } from "./plain";
 import type { Line, LineStyle } from "./terminal";
-import { statusOf, toLines, windowStart } from "./terminal";
+import { clampOffset, statusOf, toLines, windowStart } from "./terminal";
 
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -140,7 +140,7 @@ function Detail({
 	const end = Math.min(lines.length, offset + height);
 	const position =
 		lines.length > height
-			? `   lines ${offset + 1}-${end} of ${lines.length}`
+			? `lines ${offset + 1}-${end} of ${lines.length}   `
 			: "";
 	return (
 		<Box flexDirection="column">
@@ -165,7 +165,7 @@ function Detail({
 				<Text dimColor>{`${spinner} reading notes`}</Text>
 			)}
 			<Text dimColor wrap="truncate-end">
-				{flash ?? DETAIL_KEYS + position}
+				{flash ?? position + DETAIL_KEYS}
 			</Text>
 		</Box>
 	);
@@ -199,8 +199,10 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 	const moveTo = (index: number) => {
 		setCursor(Math.max(0, Math.min(last, index)));
 	};
+	// A resize can shorten the content under a scroll position held earlier.
+	const shown = clampOffset(offset, lines.length, pageHeight);
 	const scrollTo = (line: number) => {
-		setOffset(Math.max(0, Math.min(lines.length - pageHeight, line)));
+		setOffset(clampOffset(line, lines.length, pageHeight));
 	};
 	const read = (index: number) => {
 		moveTo(index);
@@ -219,15 +221,15 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 		if (reading) {
 			if (input === "q" || key.escape || key.leftArrow || input === "h") {
 				setReading(false);
-			} else if (key.upArrow || input === "k") scrollTo(offset - 1);
-			else if (key.downArrow || input === "j") scrollTo(offset + 1);
-			else if (key.pageUp || input === "b") scrollTo(offset - pageHeight);
+			} else if (key.upArrow || input === "k") scrollTo(shown - 1);
+			else if (key.downArrow || input === "j") scrollTo(shown + 1);
+			else if (key.pageUp || input === "b") scrollTo(shown - pageHeight);
 			else if (key.pageDown || input === " " || input === "f") {
-				scrollTo(offset + pageHeight);
+				scrollTo(shown + pageHeight);
 			} else if (key.home || input === "g") scrollTo(0);
 			else if (key.end || input === "G") scrollTo(lines.length);
-			else if (input === "n") read(cursor + 1);
-			else if (input === "p") read(cursor - 1);
+			else if (input === "n" && cursor < last) read(cursor + 1);
+			else if (input === "p" && cursor > 0) read(cursor - 1);
 			return;
 		}
 		if (input === "q" || key.escape) exit();
@@ -247,7 +249,7 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 				group={selected}
 				notes={selectedNotes}
 				lines={lines}
-				offset={offset}
+				offset={shown}
 				height={pageHeight}
 				spinner={spinner}
 				flash={flash}
