@@ -83,6 +83,8 @@ export function statusOf(notes: Notes | undefined): string {
 			return "changelog";
 		case "missing":
 			return "no notes";
+		case "typings":
+			return "type defs";
 		case "elsewhere":
 			return "not on GitHub";
 		case "failed":

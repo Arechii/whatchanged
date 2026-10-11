@@ -37,6 +37,23 @@ describe("linkFor", () => {
 		).toBe("https://github.com/o/r/blob/HEAD/packages/x/CHANGELOG.md");
 	});
 
+	it("lists the commits to a DefinitelyTyped package", () => {
+		expect(
+			linkFor(
+				group({
+					repo: {
+						owner: "DefinitelyTyped",
+						name: "DefinitelyTyped",
+						directory: "types/node",
+					},
+				}),
+				{ kind: "typings" },
+			),
+		).toBe(
+			"https://github.com/DefinitelyTyped/DefinitelyTyped/commits/HEAD/types/node",
+		);
+	});
+
 	it("falls back to the releases page", () => {
 		expect(linkFor(group(), { kind: "missing" })).toBe(
 			"https://github.com/o/r/releases",

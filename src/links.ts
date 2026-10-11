@@ -40,6 +40,8 @@ export function linkFor(group: Group, notes: Notes): string {
 		}
 		case "changelog":
 			return `${base}/blob/HEAD/${notes.path}`;
+		case "typings":
+			return `${base}/commits/HEAD/${group.repo.directory}`;
 		case "missing":
 		case "failed":
 			return `${base}/releases`;

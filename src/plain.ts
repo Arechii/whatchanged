@@ -27,6 +27,8 @@ export function notesMarkdown(notes: Notes): string {
 			return `_From ${notes.path}_\n\n${demoteHeadings(cleanMarkdown(notes.markdown), 3)}`;
 		case "missing":
 			return "_No release notes found._";
+		case "typings":
+			return "_Type definitions from DefinitelyTyped, which publishes no release notes._";
 		case "elsewhere":
 			return "_Not on GitHub._";
 		case "failed":

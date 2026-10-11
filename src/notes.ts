@@ -32,6 +32,7 @@ export type Notes =
 	| { kind: "releases"; releases: VersionedRelease[]; truncated: boolean }
 	| { kind: "changelog"; path: string; markdown: string }
 	| { kind: "missing" }
+	| { kind: "typings" }
 	| { kind: "elsewhere" }
 	| { kind: "failed"; message: string; rateLimited: boolean };
 
@@ -189,6 +190,9 @@ function releasesBetween(
 export async function findNotes(group: Group, github: GitHub): Promise<Notes> {
 	const { repo, names, current, latest } = group;
 	if (!repo) return { kind: "elsewhere" };
+	// One repo of type packages, with no releases or changelogs to read.
+	if (repo.owner.toLowerCase() === "definitelytyped")
+		return { kind: "typings" };
 	try {
 		let named = false;
 		const { releases, truncated } = await github.releases(repo, (page) => {

@@ -301,6 +301,19 @@ describe("findNotes", () => {
 		});
 	});
 
+	it("does not look for notes DefinitelyTyped never publishes", async () => {
+		const github = fakeGitHub([]);
+		const typings = group({
+			repo: {
+				owner: "DefinitelyTyped",
+				name: "DefinitelyTyped",
+				directory: "types/node",
+			},
+		});
+		expect(await findNotes(typings, github)).toEqual({ kind: "typings" });
+		expect(github.asked).toEqual([]);
+	});
+
 	it("does not look for packages outside GitHub", async () => {
 		expect(
 			await findNotes(group({ repo: null, directories: [] }), fakeGitHub([])),
