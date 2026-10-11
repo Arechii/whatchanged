@@ -19,15 +19,20 @@
 		"type": "git",
 		"url": "git+https://github.com/Arechii/whatchanged.git"
 	},
+	"bin": {
+		"whatchanged": "dist/cli.mjs"
+	},
 	"files": [
 		"dist"
 	],
 	"type": "module",
 	"scripts": {
+		"build": "tsdown",
 		"check": "oxlint --fix . && oxfmt --write .",
 		"check:ci": "oxlint --deny-warnings . && oxfmt --check .",
 		"test": "vitest run",
-		"typecheck": "tsc --noEmit"
+		"typecheck": "tsc --noEmit",
+		"prepack": "pnpm build"
 	},
 	"devDependencies": {
 		"@types/node": "^22.20.5",
@@ -36,6 +41,7 @@
 		"oxlint": "^1.87.0",
 		"oxlint-tsgolint": "~7.0.2004",
 		"semver": "^7.8.5",
+		"tsdown": "^0.23.0",
 		"typescript": "^7.0.2",
 		"vitest": "^5.0.3"
 	},
