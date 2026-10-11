@@ -12,5 +12,8 @@ Rules that are not visible from the code:
   that fails the typecheck instead of a user's run.
 - **`pnpm check` (oxlint, then oxfmt) is the only formatter.** The lint is
   type-aware; `pnpm check:ci` is what CI runs.
+- **A user-facing change comes with a changeset** (`pnpm changeset`). Its
+  line is what users read in the release notes, which this tool exists to
+  show them.
 - **Commit messages are a subject line.** Every commit passes lint, typecheck
   and tests on its own.

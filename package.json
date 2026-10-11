@@ -32,9 +32,13 @@
 		"check:ci": "oxlint --deny-warnings . && oxfmt --check .",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit",
-		"prepack": "pnpm build"
+		"prepack": "pnpm build",
+		"changeset": "changeset",
+		"version-packages": "changeset version && oxfmt --write CHANGELOG.md package.json",
+		"release": "pnpm build && changeset publish"
 	},
 	"devDependencies": {
+		"@changesets/cli": "^3.0.3",
 		"@types/node": "^22.20.5",
 		"@types/react": "^19.3.0",
 		"@types/semver": "^7.8.0",
