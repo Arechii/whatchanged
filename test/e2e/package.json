@@ -1,0 +1,8 @@
+{
+	"name": "whatchanged-e2e",
+	"private": true,
+	"dependencies": {
+		"ms": "2.1.2",
+		"semver": "7.6.0"
+	}
+}
