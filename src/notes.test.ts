@@ -33,8 +33,9 @@ const manifests: Record<string, unknown> = {
 	},
 };
 
+// The code joins paths with the platform separator; the keys above use "/".
 const read = async (path: string) => {
-	const manifest = manifests[path];
+	const manifest = manifests[path.replaceAll("\\", "/")];
 	if (manifest === undefined) throw new Error(`ENOENT ${path}`);
 	return JSON.stringify(manifest);
 };
