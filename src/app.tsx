@@ -1,8 +1,12 @@
+import type { TextProps } from "ink";
 import { Box, Text, useAnimation, useApp, useInput, useWindowSize } from "ink";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { linkFor } from "./links";
 import type { Bump, Group, Notes } from "./notes";
-import { statusOf, windowStart } from "./terminal";
+import { groupTitle, notesMarkdown } from "./plain";
+import type { Line, LineStyle } from "./terminal";
+import { statusOf, toLines, windowStart } from "./terminal";
 
 const SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -14,7 +18,8 @@ const BUMPS: Record<Bump, { label: string; color: string }> = {
 };
 
 const STATUS_WIDTH = 13;
-const LIST_KEYS = "↑↓ move   q quit";
+const LIST_KEYS = "↑↓ move   ⏎ read   q quit";
+const DETAIL_KEYS = "↑↓ scroll   space page   n/p next/prev   esc back";
 
 export type AppProps = {
 	groups: readonly Group[];
@@ -98,25 +103,115 @@ function Row({
 	);
 }
 
+const LINE_STYLES: Record<LineStyle, TextProps> = {
+	title: { bold: true, color: "cyan" },
+	heading: { bold: true },
+	code: { color: "gray" },
+	quote: { dimColor: true, italic: true },
+	text: {},
+};
+
+function Detail({
+	group,
+	notes,
+	lines,
+	offset,
+	height,
+	spinner,
+}: {
+	group: Group;
+	notes: Notes | undefined;
+	lines: readonly Line[];
+	offset: number;
+	height: number;
+	spinner: string;
+}) {
+	const bump = BUMPS[group.bump];
+	const end = Math.min(lines.length, offset + height);
+	const position =
+		lines.length > height
+			? `   lines ${offset + 1}-${end} of ${lines.length}`
+			: "";
+	return (
+		<Box flexDirection="column">
+			<Box>
+				<Text color={bump.color}>{`${bump.label} `}</Text>
+				<Text bold wrap="truncate-end">
+					{groupTitle(group)}
+				</Text>
+			</Box>
+			<Text dimColor wrap="truncate-end">
+				{notes ? linkFor(group, notes) : ""}
+			</Text>
+			{notes ? (
+				lines.slice(offset, end).map((line, i) => (
+					// Rows are positions in a scrolled window, not identities.
+					// oxlint-disable-next-line react/no-array-index-key
+					<Text key={i} {...LINE_STYLES[line.style]}>
+						{line.text === "" ? " " : line.text}
+					</Text>
+				))
+			) : (
+				<Text dimColor>{`${spinner} reading notes`}</Text>
+			)}
+			<Text dimColor>{DETAIL_KEYS + position}</Text>
+		</Box>
+	);
+}
+
 /** The interactive view: every outdated group, its notes loading in place. */
 export function App({ groups, notesFor, warning }: AppProps) {
 	const { exit } = useApp();
-	const { rows } = useWindowSize();
+	const { columns, rows } = useWindowSize();
 	const notes = useNotes(groups, notesFor);
 	const loading = notes.size < groups.length;
 	const { frame } = useAnimation({ interval: 80, isActive: loading });
 	const [cursor, setCursor] = useState(0);
+	const [reading, setReading] = useState(false);
+	const [offset, setOffset] = useState(0);
+
+	const selected = groups[cursor];
+	const selectedNotes = selected ? notes.get(selected.key) : undefined;
+	const lines = useMemo(
+		() =>
+			selectedNotes ? toLines(notesMarkdown(selectedNotes), columns - 1) : [],
+		[selectedNotes, columns],
+	);
 
 	// Header and footer, plus a spare row: output as tall as the terminal
 	// makes ink redraw the whole screen on every spinner frame.
 	const height = Math.max(3, rows - 3 - (warning ? 1 : 0));
+	const pageHeight = Math.max(3, rows - 4);
 	const last = groups.length - 1;
 	const moveTo = (index: number) => {
 		setCursor(Math.max(0, Math.min(last, index)));
 	};
+	const scrollTo = (line: number) => {
+		setOffset(Math.max(0, Math.min(lines.length - pageHeight, line)));
+	};
+	const read = (index: number) => {
+		moveTo(index);
+		setOffset(0);
+		setReading(true);
+	};
 
 	useInput((input, key) => {
+		if (reading) {
+			if (input === "q" || key.escape || key.leftArrow || input === "h") {
+				setReading(false);
+			} else if (key.upArrow || input === "k") scrollTo(offset - 1);
+			else if (key.downArrow || input === "j") scrollTo(offset + 1);
+			else if (key.pageUp || input === "b") scrollTo(offset - pageHeight);
+			else if (key.pageDown || input === " " || input === "f") {
+				scrollTo(offset + pageHeight);
+			} else if (key.home || input === "g") scrollTo(0);
+			else if (key.end || input === "G") scrollTo(lines.length);
+			else if (input === "n") read(cursor + 1);
+			else if (input === "p") read(cursor - 1);
+			return;
+		}
 		if (input === "q" || key.escape) exit();
+		else if (key.return || key.rightArrow || input === "l") read(cursor);
 		else if (key.upArrow || input === "k") moveTo(cursor - 1);
 		else if (key.downArrow || input === "j") moveTo(cursor + 1);
 		else if (key.pageUp) moveTo(cursor - height);
@@ -125,12 +220,25 @@ export function App({ groups, notesFor, warning }: AppProps) {
 		else if (key.end || input === "G") moveTo(last);
 	});
 
+	const spinner = SPINNER[frame % SPINNER.length] ?? "";
+	if (reading && selected) {
+		return (
+			<Detail
+				group={selected}
+				notes={selectedNotes}
+				lines={lines}
+				offset={offset}
+				height={pageHeight}
+				spinner={spinner}
+			/>
+		);
+	}
+
 	const start = windowStart(cursor, groups.length, height);
 	const versionWidth = Math.max(
 		...groups.map((group) => `${group.current} → ${group.latest}`.length),
 	);
 	const majors = groups.filter((group) => group.bump === "major").length;
-	const spinner = SPINNER[frame % SPINNER.length] ?? "";
 
 	return (
 		<Box flexDirection="column">

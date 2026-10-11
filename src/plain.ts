@@ -10,7 +10,8 @@ export function groupTitle(group: Group): string {
 	return `${group.names.join(", ")} ${group.current} → ${group.latest}`;
 }
 
-function notesMarkdown(notes: Notes): string {
+/** A group's notes as Markdown, without its title or link. */
+export function notesMarkdown(notes: Notes): string {
 	switch (notes.kind) {
 		case "releases": {
 			const sections = notes.releases.map((release) => {

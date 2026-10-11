@@ -29,10 +29,20 @@ const notesFor = async (found: Group): Promise<Notes> =>
 	found.key === "alpha"
 		? {
 				kind: "releases",
-				releases: [{ tag: "v2.0.0", body: "", url: "", version: "2.0.0" }],
+				releases: [
+					{
+						tag: "v2.0.0",
+						body: "## Breaking\n- **core**: dropped [#7](https://x)",
+						url: "",
+						version: "2.0.0",
+					},
+				],
 				truncated: false,
 			}
 		: { kind: "missing" };
+
+const ENTER = "\r";
+const ESCAPE = "\u001B";
 
 describe("App", () => {
 	it("lists the groups and fills in their notes as they arrive", async () => {
@@ -70,6 +80,32 @@ describe("App", () => {
 		);
 		await vi.waitFor(() => {
 			expect(lastFrame()).toContain("failed");
+		});
+	});
+
+	it("reads a group's notes and moves between groups", async () => {
+		const { lastFrame, stdin } = render(
+			<App groups={groups} notesFor={notesFor} />,
+		);
+		await vi.waitFor(() => {
+			expect(lastFrame()).toContain("1 release");
+		});
+		stdin.write(ENTER);
+		await vi.waitFor(() => {
+			expect(lastFrame()).toContain("alpha 1.0.0 → 2.0.0");
+		});
+		expect(lastFrame()).toContain("v2.0.0");
+		expect(lastFrame()).toContain("- core: dropped #7");
+		expect(lastFrame()).toContain(
+			"https://github.com/o/alpha/compare/v1.0.0...v2.0.0",
+		);
+		stdin.write("n");
+		await vi.waitFor(() => {
+			expect(lastFrame()).toContain("No release notes found.");
+		});
+		stdin.write(ESCAPE);
+		await vi.waitFor(() => {
+			expect(lastFrame()).toMatch(/› patch\s+beta/);
 		});
 	});
 
