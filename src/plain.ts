@@ -26,7 +26,9 @@ export function notesMarkdown(notes: Notes): string {
 		case "changelog":
 			return `_From ${notes.path}_\n\n${demoteHeadings(cleanMarkdown(notes.markdown), 3)}`;
 		case "missing":
-			return "_No release notes found._";
+			return notes.truncated
+				? "_No release notes in the newest releases, and older ones were not read._"
+				: "_No release notes found._";
 		case "typings":
 			return "_Type definitions from DefinitelyTyped, which publishes no release notes._";
 		case "elsewhere":
@@ -44,7 +46,7 @@ export function renderPlain(
 	notes: readonly Notes[],
 ): string {
 	const sections = groups.map((group, i) => {
-		const groupNotes = notes[i] ?? { kind: "missing" };
+		const groupNotes = notes[i] ?? { kind: "missing", truncated: false };
 		return [
 			`## ${groupTitle(group)} (${group.bump})`,
 			notesMarkdown(groupNotes),

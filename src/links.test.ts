@@ -55,7 +55,7 @@ describe("linkFor", () => {
 	});
 
 	it("falls back to the releases page", () => {
-		expect(linkFor(group(), { kind: "missing" })).toBe(
+		expect(linkFor(group(), { kind: "missing", truncated: false })).toBe(
 			"https://github.com/o/r/releases",
 		);
 	});

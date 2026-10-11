@@ -39,7 +39,7 @@ const notesFor = async (found: Group): Promise<Notes> =>
 				],
 				truncated: false,
 			}
-		: { kind: "missing" };
+		: { kind: "missing", truncated: false };
 
 const noop = () => undefined;
 const ENTER = "\r";

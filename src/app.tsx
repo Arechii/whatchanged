@@ -213,7 +213,10 @@ export function App({ groups, notesFor, openUrl, warning }: AppProps) {
 	useInput((input, key) => {
 		setFlash(undefined);
 		if (input === "o" && selected) {
-			const url = linkFor(selected, selectedNotes ?? { kind: "missing" });
+			const url = linkFor(
+				selected,
+				selectedNotes ?? { kind: "missing", truncated: false },
+			);
 			openUrl(url);
 			setFlash(`Opening ${url}`);
 			return;

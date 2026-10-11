@@ -31,7 +31,7 @@ type VersionedRelease = Release & { version: string };
 export type Notes =
 	| { kind: "releases"; releases: VersionedRelease[]; truncated: boolean }
 	| { kind: "changelog"; path: string; markdown: string }
-	| { kind: "missing" }
+	| { kind: "missing"; truncated: boolean }
 	| { kind: "typings" }
 	| { kind: "elsewhere" }
 	| { kind: "failed"; message: string; rateLimited: boolean };
@@ -214,7 +214,7 @@ export async function findNotes(group: Group, github: GitHub): Promise<Notes> {
 				file === null ? "" : sliceChangelog(file, current, latest, names);
 			if (markdown) return { kind: "changelog", path, markdown };
 		}
-		return { kind: "missing" };
+		return { kind: "missing", truncated };
 	} catch (error) {
 		return {
 			kind: "failed",
