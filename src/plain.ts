@@ -10,7 +10,7 @@ export function groupTitle(group: Group): string {
 	return `${group.names.join(", ")} ${group.current} → ${group.latest}`;
 }
 
-function body(notes: Notes): string {
+function notesMarkdown(notes: Notes): string {
 	switch (notes.kind) {
 		case "releases": {
 			const sections = notes.releases.map((release) => {
@@ -44,7 +44,7 @@ export function renderPlain(
 		const groupNotes = notes[i] ?? { kind: "missing" };
 		return [
 			`## ${groupTitle(group)} (${group.bump})`,
-			body(groupNotes),
+			notesMarkdown(groupNotes),
 			linkFor(group, groupNotes),
 		].join("\n\n");
 	});

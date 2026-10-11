@@ -2,7 +2,11 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 
+import { render } from "ink";
+import { createElement } from "react";
+
 import manifest from "../package.json" with { type: "json" };
+import { App } from "./app";
 import { createGitHub, findToken } from "./github";
 import { findGroups, findNotes } from "./notes";
 import { readOutdated } from "./outdated";
@@ -13,8 +17,12 @@ const HELP = `Usage: whatchanged [options] [package...]
 Shows the release notes between the installed and the latest version of
 every outdated dependency in a pnpm workspace. Name packages to see only those.
 
+In a terminal the notes open in an interactive view; piped or with --plain
+they print as Markdown.
+
 Options:
   --cwd <dir>      Workspace to read (default: the current directory)
+  --plain          Print Markdown even in a terminal
   -v, --version    Print the version
   -h, --help       Print this help
 
@@ -23,11 +31,20 @@ Environment:
                    Without it, the token of a signed-in GitHub CLI is used.
 `;
 
+const PROGRESS = "Reading outdated dependencies…";
+let progressShown = false;
+
+function clearProgress(): void {
+	if (progressShown) process.stderr.write("\r\u001B[2K");
+	progressShown = false;
+}
+
 async function main(): Promise<void> {
 	const { values, positionals } = parseArgs({
 		allowPositionals: true,
 		options: {
 			cwd: { type: "string" },
+			plain: { type: "boolean" },
 			version: { type: "boolean", short: "v" },
 			help: { type: "boolean", short: "h" },
 		},
@@ -41,15 +58,23 @@ async function main(): Promise<void> {
 		return;
 	}
 
+	const interactive =
+		values.plain !== true && process.stdout.isTTY && process.stdin.isTTY;
 	const cwd = resolve(values.cwd ?? process.cwd());
+	if (interactive) {
+		process.stderr.write(PROGRESS);
+		progressShown = true;
+	}
 	const outdated = (await readOutdated(cwd)).filter(
 		(dependency) =>
 			positionals.length === 0 || positionals.includes(dependency.name),
 	);
-	for (const name of positionals) {
-		if (!outdated.some((dependency) => dependency.name === name)) {
-			process.stderr.write(`${name} is not outdated, or not a dependency.\n`);
-		}
+	const unknown = positionals.filter(
+		(name) => !outdated.some((dependency) => dependency.name === name),
+	);
+	if (unknown.length > 0 || outdated.length === 0) clearProgress();
+	for (const name of unknown) {
+		process.stderr.write(`${name} is not outdated, or not a dependency.\n`);
 	}
 	if (outdated.length === 0) {
 		process.stderr.write("Nothing to show: every dependency is up to date.\n");
@@ -57,13 +82,28 @@ async function main(): Promise<void> {
 	}
 
 	const token = await findToken();
-	if (token === undefined) {
-		process.stderr.write(
-			"No GitHub token, so GitHub allows 60 requests an hour. Set GITHUB_TOKEN or run `gh auth login`.\n",
-		);
-	}
+	const warning =
+		token === undefined
+			? "No GitHub token, so GitHub allows 60 requests an hour. Set GITHUB_TOKEN or run `gh auth login`."
+			: undefined;
 	const github = createGitHub({ fetch, token });
 	const groups = await findGroups(outdated, { fetch });
+
+	if (interactive) {
+		clearProgress();
+		const view = render(
+			createElement(App, {
+				groups,
+				notesFor: (group) => findNotes(group, github),
+				warning,
+			}),
+			{ alternateScreen: true },
+		);
+		await view.waitUntilExit();
+		return;
+	}
+
+	if (warning !== undefined) process.stderr.write(`${warning}\n`);
 	const notes = await Promise.all(
 		groups.map((group) => findNotes(group, github)),
 	);
@@ -71,6 +111,7 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
+	clearProgress();
 	process.stderr.write(
 		`whatchanged: ${error instanceof Error ? error.message : String(error)}\n`,
 	);

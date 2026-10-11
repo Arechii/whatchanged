@@ -8,6 +8,8 @@ export default defineConfig({
 	// Every runtime package is compiled in, so the published package has no
 	// dependencies for npx to install.
 	deps: { alwaysBundle: [/./], onlyBundle: false },
+	// React's production build rather than its development one.
+	define: { "process.env.NODE_ENV": JSON.stringify("production") },
 	dts: false,
 	minify: true,
 });
