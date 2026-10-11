@@ -1,0 +1,37 @@
+{
+	"name": "whatchanged",
+	"version": "0.0.0",
+	"description": "Read the release notes for every outdated dependency, between the version you have and the latest",
+	"keywords": [
+		"changelog",
+		"release-notes",
+		"outdated",
+		"dependencies",
+		"upgrade",
+		"pnpm",
+		"cli"
+	],
+	"homepage": "https://github.com/Arechii/whatchanged#readme",
+	"bugs": "https://github.com/Arechii/whatchanged/issues",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Arechii/whatchanged.git"
+	},
+	"license": "MIT",
+	"author": "Arechi",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"typecheck": "tsc --noEmit"
+	},
+	"engines": {
+		"node": ">=22"
+	},
+	"packageManager": "pnpm@12.9.1",
+	"devDependencies": {
+		"@types/node": "^22.20.5",
+		"typescript": "^7.0.2"
+	}
+}
