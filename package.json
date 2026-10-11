@@ -1,6 +1,6 @@
 {
 	"name": "@arechi/whatchanged",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Read the release notes for every outdated dependency, between the version you have and the latest",
 	"keywords": [
 		"changelog",
